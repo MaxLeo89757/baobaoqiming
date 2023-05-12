@@ -1,0 +1,112 @@
+import random
+import unicodedata
+candidate_chars = []
+for codepoint in range(0x4e00, 0x9fff):
+    char = chr(codepoint)
+    if unicodedata.category(char) == 'Lo':
+        candidate_chars.append(char)
+# 八字
+bazi = {
+    '年干': '甲',
+    '年支': '寅',
+    '月干': '甲',
+    '月支': '寅',
+    '日干': '壬',
+    '日支': '戌',
+    '时干': '辛',
+    '时支': '亥'
+}
+
+# 五行
+wuxing = {
+    '金': ['辰', '戌'],
+    '木': ['寅', '卯', '辰'],
+    '水': ['子', '亥', '寅'],
+    '火': ['午', '未', '申'],
+    '土': ['丑', '戌', '未']
+}
+
+# 巧连神数
+shenshu = {
+    '天医': ['申', '子', '辰', '午', '戌'],
+    '太阴': ['寅', '卯', '辰', '午', '未', '申', '酉', '戌', '亥', '子'],
+    '贵人': ['子', '丑', '寅', '卯', '午', '未', '申', '酉'],
+    '文昌': ['寅', '午', '戌'],
+    '文曲': ['卯', '酉', '丑'],
+    '天喜': ['寅', '午', '戌', '巳', '申'],
+    '天德': ['寅', '卯', '巳', '午', '申', '酉'],
+    '月德': ['寅', '卯', '辰', '午', '未', '申', '酉', '戌', '亥', '子']
+}
+
+# 姓氏
+surname = '刘'
+
+# 名字长度
+name_length = 2
+
+def generate_name():
+   def get_random_word(): # 随机选择两个字
+    first_word = get_random_word()
+    second_word = get_random_word()
+    # 拼接成一个名字
+    name = first_word + second_word
+    return name
+    name = ''
+    for i in range(name_length):
+        # 随机选择一个五行
+        wuxing_key = random.choice(list(wuxing.keys()))
+        # 从该五行中随机选择一个字
+        char = random.choice(wuxing[wuxing_key])
+        name += char
+    return name
+
+def evaluate_name(name):
+    # 计算名字的得分
+    score = 0
+    # 八字评分
+    for key in bazi:
+        if bazi[key] in name:
+            score += 10
+    # 五行评分
+    for key in wuxing:
+        count = 0
+        for char in name:
+            if char in wuxing[key]:
+                count += 1
+        if count == name_length:
+            score += 10
+    # 巧连神数评分
+    for key in shenshu:
+        count = 0
+        for char in name:
+            if char in shenshu[key]:
+                count += 1
+        if count >= 1:
+            score += 10
+    return score
+
+def main():
+    results = []
+    max_score = 0
+    best_name = ''
+    # 循环生成100个名字，选出得分最高的
+    for i in range(100):
+        name = generate_name()
+        full_name = surname + name
+        score = evaluate_name(full_name)
+        if score > max_score:
+            max_score = score
+            best_name = full_name
+        results.append((full_name, score))
+    # 输出结果
+    print('最好的名字是：', best_name)
+    print('得分为：', max_score)
+    # 将结果保存到文件
+    with open('best_names.txt', 'w') as f:
+        f.write('最好的名字是：' + best_name + '\n')
+        f.write('得分为：' + str(max_score) + '\n')
+        f.write('所有名字及其得分如下：\n')
+        for result in results:
+            f.write(result[0] + ': ' + str(result[1]) + '\n')
+if __name__ == '__main__':
+    main()
